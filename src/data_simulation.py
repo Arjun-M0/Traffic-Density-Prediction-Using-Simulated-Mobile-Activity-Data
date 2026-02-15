@@ -5,7 +5,7 @@ import os
 # -----------------------------
 # Configuration
 # -----------------------------
-DAYS = 30
+DAYS = 60
 LOCATIONS = 5
 START_DATE = "2025-01-01"
 
