@@ -28,20 +28,6 @@ build/
 .ipynb_checkpoints
 *.ipynb
 
-# Data files (keep structure, ignore contents)
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-
-# Model and Results
-results/*
-!results/.gitkeep
-*.h5
-*.pkl
-*.joblib
-*.model
-
 # OS
 Thumbs.db
 .DS_Store

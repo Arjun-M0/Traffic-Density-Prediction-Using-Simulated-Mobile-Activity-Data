@@ -1,12 +1,18 @@
 # src/model.py
 import os
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers, models
+import keras
+from keras import layers, models
 import json
+
+# Set seeds for reproducibility
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+keras.utils.set_random_seed(SEED)
 
 
 def load_processed_data(processed_folder):
@@ -41,9 +47,9 @@ def make_sequences(data, lookback=24):
 def build_lstm_model(input_shape):
     """Build LSTM-based sequence prediction model."""
     model = models.Sequential([
-        layers.LSTM(64, activation='relu', input_shape=input_shape, return_sequences=True),
+        layers.LSTM(64, input_shape=input_shape, return_sequences=True),
         layers.Dropout(0.2),
-        layers.LSTM(32, activation='relu', return_sequences=False),
+        layers.LSTM(32, return_sequences=False),
         layers.Dropout(0.2),
         layers.Dense(16, activation='relu'),
         layers.Dense(1)
@@ -58,34 +64,20 @@ def build_lstm_model(input_shape):
     return model
 
 
-def build_dense_model(input_shape):
-    """Build dense neural network model."""
-    # Flatten the input
-    input_layer = layers.Input(shape=input_shape)
-    x = layers.Flatten()(input_layer)
-    x = layers.Dense(128, activation='relu')(x)
-    x = layers.Dropout(0.3)(x)
-    x = layers.Dense(64, activation='relu')(x)
-    x = layers.Dropout(0.2)(x)
-    x = layers.Dense(32, activation='relu')(x)
-    x = layers.Dense(1)(x)
-    
-    model = models.Model(inputs=input_layer, outputs=x)
-    model.compile(
-        optimizer='adam',
-        loss='mse',
-        metrics=['mae']
-    )
-    
-    return model
-
-
 def train_model(model, X_train, y_train, X_test, y_test, epochs=50, batch_size=32):
-    """Train the model with early stopping."""
+    """Train the model with early stopping and learning rate scheduling."""
     early_stopping = keras.callbacks.EarlyStopping(
         monitor='val_loss',
         patience=10,
         restore_best_weights=True
+    )
+    
+    lr_scheduler = keras.callbacks.ReduceLROnPlateau(
+        monitor='val_loss',
+        factor=0.5,
+        patience=5,
+        min_lr=1e-6,
+        verbose=1
     )
     
     history = model.fit(
@@ -93,7 +85,7 @@ def train_model(model, X_train, y_train, X_test, y_test, epochs=50, batch_size=3
         validation_data=(X_test, y_test),
         epochs=epochs,
         batch_size=batch_size,
-        callbacks=[early_stopping],
+        callbacks=[early_stopping, lr_scheduler],
         verbose=1
     )
     
@@ -109,11 +101,19 @@ def evaluate_model(model, X_test, y_test):
     rmse = np.sqrt(mse)
     r2 = r2_score(y_test, y_pred)
     
+    # MAPE: only calculate for non-zero actual values to avoid division issues
+    mask = y_test > 0.1  # Filter out near-zero values
+    if mask.sum() > 0:
+        mape = np.mean(np.abs((y_test[mask] - y_pred[mask]) / y_test[mask])) * 100
+    else:
+        mape = 0.0
+    
     metrics = {
         'MSE': float(mse),
         'MAE': float(mae),
         'RMSE': float(rmse),
-        'R2': float(r2)
+        'R2': float(r2),
+        'MAPE': float(mape)
     }
     
     return y_pred, metrics
