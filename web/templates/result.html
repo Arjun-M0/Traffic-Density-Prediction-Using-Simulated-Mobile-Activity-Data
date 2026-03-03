@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Traffic Result</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: url("{{ url_for('static', filename='traffic.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 18px;
+            box-shadow: 0px 8px 30px rgba(0,0,0,0.4);
+            text-align: center;
+            width: 500px;
+            color: white;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .traffic-level {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .low { color: #00ff88; }
+        .medium { color: #ffc107; }
+        .high { color: #ff3b3b; }
+
+        canvas {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #ff4b2b;
+            color: white;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h2>Traffic Prediction Result</h2>
+
+        <div class="traffic-level 
+            {% if prediction == 'Low' %}low
+            {% elif prediction == 'Medium' %}medium
+            {% else %}high
+            {% endif %}">
+            {{ prediction }} Traffic
+        </div>
+
+        <canvas id="trafficChart" width="400" height="200"></canvas>
+
+        <br>
+        <a href="/"><button>Go Back</button></a>
+    </div>
+
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Traffic Level'],
+                datasets: [{
+                    label: 'Density',
+                    data: [{{ value }}],
+                    backgroundColor: 'rgba(255, 75, 43, 0.7)'
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 500
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

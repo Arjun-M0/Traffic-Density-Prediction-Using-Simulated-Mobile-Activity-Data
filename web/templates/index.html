@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Traffic Prediction System</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: url("{{ url_for('static', filename='traffic.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Glass Card */
+        .card {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 18px;
+            box-shadow: 0px 8px 30px rgba(0,0,0,0.4);
+            text-align: center;
+            width: 500px;
+            color: white;
+        }
+
+        h2 {
+            margin-bottom: 25px;
+        }
+
+        /* ---------- Custom Dropdown Common Style ---------- */
+        .custom-dropdown {
+            position: relative;
+            margin: 15px 0;
+        }
+
+        .dropdown-selected {
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            color: white;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .dropdown-options {
+            position: absolute;
+            width: 100%;
+            margin-top: 6px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            display: none;
+            overflow-y: auto;
+            max-height: 200px;
+            z-index: 1000;
+        }
+
+        .dropdown-options div {
+            padding: 10px;
+            cursor: pointer;
+            color: black;
+            font-weight: 500;
+        }
+
+        .dropdown-options div:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        /* Layout for time row */
+        .time-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .time-row .custom-dropdown {
+            flex: 1;
+        }
+
+        /* Button */
+        button {
+            width: 100%;
+            padding: 13px;
+            background-color: #ff4b2b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 25px;
+            transition: 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #ff2e00;
+            transform: scale(1.03);
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h2>Traffic Density Prediction</h2>
+
+        <form method="POST">
+
+            <!-- PLACE DROPDOWN -->
+            <div class="custom-dropdown">
+                <div class="dropdown-selected" onclick="toggleDropdown('placeMenu')">
+                    📍 <span id="selectedPlace">Select Place</span>
+                </div>
+
+                <div class="dropdown-options" id="placeMenu">
+                    <div onclick="selectOption('Commercial Districts','selectedPlace','placeInput','placeMenu')">Commercial Districts</div>
+                    <div onclick="selectOption('Residential Area','selectedPlace','placeInput','placeMenu')">Residential Area</div>
+                    <div onclick="selectOption('Shopping Mall','selectedPlace','placeInput','placeMenu')">Shopping Mall</div>
+                    <div onclick="selectOption('Industrial Zone','selectedPlace','placeInput','placeMenu')">Industrial Zone</div>
+                    <div onclick="selectOption('Entertainment Districts','selectedPlace','placeInput','placeMenu')">Entertainment Districts</div>
+                </div>
+
+                <input type="hidden" name="place" id="placeInput" required>
+            </div>
+
+            <!-- TIME DROPDOWNS -->
+            <div class="time-row">
+
+                <!-- HOUR -->
+                <div class="custom-dropdown">
+                    <div class="dropdown-selected" onclick="toggleDropdown('hourMenu')">
+                        ⏰ <span id="selectedHour">Hour</span>
+                    </div>
+
+                    <div class="dropdown-options" id="hourMenu">
+                        {% for i in range(1,13) %}
+                        <div onclick="selectOption('{{ i }}','selectedHour','hourInput','hourMenu')">{{ i }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <input type="hidden" name="hour" id="hourInput" required>
+                </div>
+
+                <!-- MINUTE -->
+                <div class="custom-dropdown">
+                    <div class="dropdown-selected" onclick="toggleDropdown('minuteMenu')">
+                        <span id="selectedMinute">Minute</span>
+                    </div>
+
+                    <div class="dropdown-options" id="minuteMenu">
+                        {% for i in range(0,60) %}
+                        <div onclick="selectOption('{{ "%02d"|format(i) }}','selectedMinute','minuteInput','minuteMenu')">
+                            {{ "%02d"|format(i) }}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <input type="hidden" name="minute" id="minuteInput" required>
+                </div>
+
+                <!-- AM/PM -->
+                <div class="custom-dropdown">
+                    <div class="dropdown-selected" onclick="toggleDropdown('periodMenu')">
+                        <span id="selectedPeriod">AM/PM</span>
+                    </div>
+
+                    <div class="dropdown-options" id="periodMenu">
+                        <div onclick="selectOption('AM','selectedPeriod','periodInput','periodMenu')">AM</div>
+                        <div onclick="selectOption('PM','selectedPeriod','periodInput','periodMenu')">PM</div>
+                    </div>
+
+                    <input type="hidden" name="period" id="periodInput" required>
+                </div>
+
+            </div>
+
+            <button type="submit">Predict Traffic</button>
+
+        </form>
+
+    </div>
+
+    <script>
+        function toggleDropdown(menuId) {
+            const menu = document.getElementById(menuId);
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+
+        function selectOption(value, displayId, inputId, menuId) {
+            document.getElementById(displayId).innerText = value;
+            document.getElementById(inputId).value = value;
+            document.getElementById(menuId).style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.custom-dropdown')) {
+                document.querySelectorAll('.dropdown-options')
+                    .forEach(menu => menu.style.display = "none");
+            }
+        }
+    </script>
+
+</body>
+</html>
