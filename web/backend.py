@@ -77,8 +77,14 @@ def build_input_sequence(location_id, hour_24, day_of_week):
 def home():
     if request.method == "POST":
         place = request.form.get("place", "")
-        hour_12 = int(request.form.get("hour", 12))
-        period = request.form.get("period", "AM")
+        hour_str = request.form.get("hour", "")
+        period = request.form.get("period", "")
+
+        # Server-side validation
+        if not place or not hour_str or not period:
+            return render_template("index.html", error="Please select all fields")
+
+        hour_12 = int(hour_str)
 
         # Convert 12-hour to 24-hour
         if period == "AM":
@@ -87,7 +93,7 @@ def home():
             hour_24 = 12 if hour_12 == 12 else hour_12 + 12
 
         location_id = PLACE_TO_ID.get(place, 1)
-        day_of_week = datetime.now().weekday()
+        day_of_week = (datetime.now().weekday() + 1) % 7  # Tomorrow's day
 
         # Build input and predict
         X_input = build_input_sequence(location_id, hour_24, day_of_week)

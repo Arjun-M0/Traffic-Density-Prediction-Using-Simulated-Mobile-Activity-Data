@@ -103,6 +103,15 @@
             transform: scale(1.03);
         }
 
+        .error-message {
+            background: rgba(255, 59, 59, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
     </style>
 </head>
 
@@ -111,7 +120,9 @@
     <div class="card">
         <h2>Traffic Density Prediction</h2>
 
-        <form method="POST">
+        <div class="error-message" id="errorMsg" {% if error %}style="display:block"{% endif %}>{{ error if error else '' }}</div>
+
+        <form method="POST" onsubmit="return validateForm()">
 
             <!-- PLACE DROPDOWN -->
             <div class="custom-dropdown">
@@ -146,23 +157,6 @@
                     </div>
 
                     <input type="hidden" name="hour" id="hourInput" required>
-                </div>
-
-                <!-- MINUTE -->
-                <div class="custom-dropdown">
-                    <div class="dropdown-selected" onclick="toggleDropdown('minuteMenu')">
-                        <span id="selectedMinute">Minute</span>
-                    </div>
-
-                    <div class="dropdown-options" id="minuteMenu">
-                        {% for i in range(0,60) %}
-                        <div onclick="selectOption('{{ "%02d"|format(i) }}','selectedMinute','minuteInput','minuteMenu')">
-                            {{ "%02d"|format(i) }}
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    <input type="hidden" name="minute" id="minuteInput" required>
                 </div>
 
                 <!-- AM/PM -->
@@ -204,6 +198,27 @@
                 document.querySelectorAll('.dropdown-options')
                     .forEach(menu => menu.style.display = "none");
             }
+        }
+
+        function validateForm() {
+            const place = document.getElementById('placeInput').value;
+            const hour = document.getElementById('hourInput').value;
+            const period = document.getElementById('periodInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            let errors = [];
+            if (!place) errors.push('Place');
+            if (!hour) errors.push('Hour');
+            if (!period) errors.push('AM/PM');
+
+            if (errors.length > 0) {
+                errorMsg.textContent = 'Please select: ' + errors.join(', ');
+                errorMsg.style.display = 'block';
+                return false;
+            }
+
+            errorMsg.style.display = 'none';
+            return true;
         }
     </script>
 
