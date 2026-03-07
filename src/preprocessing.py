@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+import joblib
 
 
 def load_and_prepare_data(filepath):
@@ -44,6 +45,9 @@ def preprocess_and_save(
     scaler = MinMaxScaler()
 
     df[continuous_features] = scaler.fit_transform(df[continuous_features])
+
+    # Save scaler for inference
+    joblib.dump(scaler, os.path.join(processed_folder, 'scaler.pkl'))
 
     feature_cols = continuous_features + list(location_dummies.columns)
     target_index = feature_cols.index('activity_count')
