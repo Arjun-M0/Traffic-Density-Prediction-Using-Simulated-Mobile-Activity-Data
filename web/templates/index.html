@@ -15,7 +15,6 @@
             align-items: center;
         }
 
-        /* Glass Card */
         .card {
             background: rgba(255, 255, 255, 0.18);
             backdrop-filter: blur(15px);
@@ -31,7 +30,6 @@
             margin-bottom: 25px;
         }
 
-        /* ---------- Custom Dropdown Common Style ---------- */
         .custom-dropdown {
             position: relative;
             margin: 15px 0;
@@ -73,7 +71,6 @@
             background: rgba(0,0,0,0.05);
         }
 
-        /* Layout for time row */
         .time-row {
             display: flex;
             gap: 10px;
@@ -84,7 +81,6 @@
             flex: 1;
         }
 
-        /* Date input */
         .date-input {
             width: 100%;
             padding: 12px;
@@ -107,7 +103,6 @@
             cursor: pointer;
         }
 
-        /* Button */
         button {
             width: 100%;
             padding: 13px;
@@ -147,7 +142,6 @@
 
         <form method="POST" onsubmit="return validateForm()">
 
-            <!-- PLACE DROPDOWN -->
             <div class="custom-dropdown">
                 <div class="dropdown-selected" onclick="toggleDropdown('placeMenu')">
                     📍 <span id="selectedPlace">Select Place</span>
@@ -164,13 +158,10 @@
                 <input type="hidden" name="place" id="placeInput" required>
             </div>
 
-            <!-- DATE -->
             <input class="date-input" type="date" name="date" id="dateInput" required>
 
-            <!-- TIME DROPDOWNS -->
             <div class="time-row">
 
-                <!-- HOUR -->
                 <div class="custom-dropdown">
                     <div class="dropdown-selected" onclick="toggleDropdown('hourMenu')">
                         ⏰ <span id="selectedHour">Hour</span>
@@ -185,7 +176,6 @@
                     <input type="hidden" name="hour" id="hourInput" required>
                 </div>
 
-                <!-- AM/PM -->
                 <div class="custom-dropdown">
                     <div class="dropdown-selected" onclick="toggleDropdown('periodMenu')">
                         <span id="selectedPeriod">AM/PM</span>

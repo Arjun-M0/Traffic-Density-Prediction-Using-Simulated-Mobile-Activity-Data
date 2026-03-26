@@ -1,5 +1,3 @@
-# src/preprocessing.py
-
 import os
 import pandas as pd
 import numpy as np
@@ -25,28 +23,17 @@ def preprocess_and_save(
     lookback=24,
     train_ratio=0.8
 ):
-    """
-    Full advanced preprocessing pipeline.
-    Saves processed numpy arrays into data/processed folder.
-    """
 
     df = load_and_prepare_data(raw_path)
 
-    # -----------------------------
-    # One-Hot Encode location_id
-    # -----------------------------
     location_dummies = pd.get_dummies(df['location_id'], prefix='loc')
     df = pd.concat([df, location_dummies], axis=1)
 
-    # -----------------------------
-    # Scale continuous features
-    # -----------------------------
     continuous_features = ['activity_count', 'hour', 'day_of_week']
     scaler = MinMaxScaler()
 
     df[continuous_features] = scaler.fit_transform(df[continuous_features])
 
-    # Save scaler for inference
     joblib.dump(scaler, os.path.join(processed_folder, 'scaler.pkl'))
 
     feature_cols = continuous_features + list(location_dummies.columns)
@@ -55,9 +42,6 @@ def preprocess_and_save(
     X_train, X_test = [], []
     y_train, y_test = [], []
 
-    # -----------------------------
-    # Create sequences per location
-    # -----------------------------
     for loc in df['location_id'].unique():
 
         loc_df = df[df['location_id'] == loc].copy()
@@ -83,10 +67,6 @@ def preprocess_and_save(
     y_train = np.array(y_train, dtype=np.float32)
     y_test = np.array(y_test, dtype=np.float32)
 
-
-    # -----------------------------
-    # Save to processed folder
-    # -----------------------------
     os.makedirs(processed_folder, exist_ok=True)
 
     np.save(os.path.join(processed_folder, "X_train.npy"), X_train)

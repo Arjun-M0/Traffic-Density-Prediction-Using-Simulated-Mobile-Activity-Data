@@ -2,19 +2,12 @@ import pandas as pd
 import numpy as np
 import os
 
-# -----------------------------
-# Configuration
-# -----------------------------
-DAYS = 60
+DAYS = 150
 LOCATIONS = 5
-START_DATE = "2025-01-01"
+START_DATE = (pd.Timestamp.now().normalize() - pd.Timedelta(days=150)).strftime("%Y-%m-%d")
 
 np.random.seed(42)
 
-# -----------------------------
-# Location Profiles
-# -----------------------------
-# Define different location types with unique characteristics
 location_profiles = {
     1: {"type": "Commercial District", "weekday_multiplier": 1.4, "weekend_multiplier": 0.6, "morning_peak": True, "evening_peak": True},
     2: {"type": "Residential Area", "weekday_multiplier": 0.9, "weekend_multiplier": 1.2, "morning_peak": True, "evening_peak": True},
@@ -23,13 +16,10 @@ location_profiles = {
     5: {"type": "Entertainment District", "weekday_multiplier": 0.8, "weekend_multiplier": 1.5, "morning_peak": False, "evening_peak": True}
 }
 
-# -----------------------------
-# Generate Time Index
-# -----------------------------
 timestamps = pd.date_range(
     start=START_DATE,
     periods=DAYS * 24,
-    freq="H"
+    freq="h"
 )
 
 data = []
@@ -43,15 +33,13 @@ for _ in range(10):  # 10 random events across the month
     event_key = (event_day, event_hour, event_location)
     random_events[event_key] = np.random.choice(["accident", "event", "closure"])
 
-# -----------------------------
-# Data Generation
-# -----------------------------
+
 for location in range(1, LOCATIONS + 1):
     profile = location_profiles[location]
     
     for idx, time in enumerate(timestamps):
         hour = time.hour
-        day_of_week = time.dayofweek  # 0=Monday, 6=Sunday
+        day_of_week = time.dayofweek  
         is_weekend = day_of_week >= 5
         day_index = idx // 24
         
@@ -66,25 +54,25 @@ for location in range(1, LOCATIONS + 1):
         
         activity = base_activity
         
-        # Morning peak (7-9 AM) - varies by location type
+        # Morning peak (7-9 AM)
         if 7 <= hour <= 9 and profile["morning_peak"]:
             if is_weekend:
                 activity += np.random.randint(20, 40)
             else:
                 activity += np.random.randint(45, 75)
         
-        # Lunch hour (12-13) - moderate increase
+        # Lunch hour (12-13)
         elif 12 <= hour <= 13:
             activity += np.random.randint(15, 30)
         
-        # Evening peak (17-19) - varies by location type
+        # Evening peak (17-19)
         elif 17 <= hour <= 19 and profile["evening_peak"]:
             if is_weekend:
                 activity += np.random.randint(35, 60)
             else:
                 activity += np.random.randint(50, 85)
         
-        # Night activity (20-23) - some locations busier
+        # Night activity (20-23)
         elif 20 <= hour <= 23:
             if profile["type"] == "Entertainment District":
                 activity += np.random.randint(30, 50)
@@ -117,7 +105,6 @@ for location in range(1, LOCATIONS + 1):
         # Ensure activity is within reasonable bounds
         activity = max(5, min(activity, 150))
         
-        # Traffic level labeling with more nuanced thresholds
         if activity < 40:
             traffic_level = "Low"
         elif activity < 80:
@@ -132,9 +119,6 @@ for location in range(1, LOCATIONS + 1):
             traffic_level
         ])
 
-# -----------------------------
-# Create DataFrame
-# -----------------------------
 df = pd.DataFrame(
     data,
     columns=[
@@ -145,9 +129,6 @@ df = pd.DataFrame(
     ]
 )
 
-# -----------------------------
-# Save Dataset
-# -----------------------------
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 output_path = os.path.join(project_root, "data", "raw", "simulated_traffic_data.csv")
 df.to_csv(output_path, index=False)
