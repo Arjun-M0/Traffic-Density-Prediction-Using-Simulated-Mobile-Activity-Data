@@ -3,7 +3,7 @@ import numpy as np
 import joblib
 import os
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
@@ -79,12 +79,28 @@ def home():
         place = request.form.get("place", "")
         hour_str = request.form.get("hour", "")
         period = request.form.get("period", "")
+        date_str = request.form.get("date", "")
 
         # Server-side validation
-        if not place or not hour_str or not period:
+        if not place or not hour_str or not period or not date_str:
             return render_template("index.html", error="Please select all fields")
 
-        hour_12 = int(hour_str)
+        try:
+            hour_12 = int(hour_str)
+        except ValueError:
+            return render_template("index.html", error="Invalid hour")
+
+        try:
+            selected_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return render_template("index.html", error="Invalid date")
+
+        today = datetime.now().date()
+        # Only allow dates from today through next 7 days
+        min_date = today
+        max_date = today + timedelta(days=7)
+        if selected_date < min_date or selected_date > max_date:
+            return render_template("index.html", error="Date must be within today and the next 7 days")
 
         # Convert 12-hour to 24-hour
         if period == "AM":
@@ -93,7 +109,7 @@ def home():
             hour_24 = 12 if hour_12 == 12 else hour_12 + 12
 
         location_id = PLACE_TO_ID.get(place, 1)
-        day_of_week = (datetime.now().weekday() + 1) % 7  # Tomorrow's day
+        day_of_week = selected_date.weekday()
 
         # Build input and predict
         X_input = build_input_sequence(location_id, hour_24, day_of_week)
@@ -114,7 +130,8 @@ def home():
 
         return render_template("result.html",
                                prediction=prediction,
-                               value=value)
+                               value=value,
+                               selected_date=selected_date.strftime("%Y-%m-%d"))
 
     return render_template("index.html")
 

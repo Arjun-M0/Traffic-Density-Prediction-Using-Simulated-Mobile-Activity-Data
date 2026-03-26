@@ -84,6 +84,29 @@
             flex: 1;
         }
 
+        /* Date input */
+        .date-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: none;
+            outline: none;
+            margin: 15px 0;
+            font-weight: 500;
+            box-sizing: border-box;
+            height: 44px;
+            line-height: 20px;
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.9;
+            cursor: pointer;
+        }
+
         /* Button */
         button {
             width: 100%;
@@ -141,6 +164,9 @@
                 <input type="hidden" name="place" id="placeInput" required>
             </div>
 
+            <!-- DATE -->
+            <input class="date-input" type="date" name="date" id="dateInput" required>
+
             <!-- TIME DROPDOWNS -->
             <div class="time-row">
 
@@ -182,6 +208,27 @@
     </div>
 
     <script>
+        (function setDateBounds() {
+            const dateInput = document.getElementById('dateInput');
+            if (!dateInput) return;
+
+            const today = new Date();
+            const minDate = new Date(today);
+
+            const maxDate = new Date(today);
+            maxDate.setDate(maxDate.getDate() + 7);
+
+            const toISODate = (d) => {
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            };
+
+            dateInput.min = toISODate(minDate);
+            dateInput.max = toISODate(maxDate);
+        })();
+
         function toggleDropdown(menuId) {
             const menu = document.getElementById(menuId);
             menu.style.display = menu.style.display === "block" ? "none" : "block";
@@ -204,12 +251,14 @@
             const place = document.getElementById('placeInput').value;
             const hour = document.getElementById('hourInput').value;
             const period = document.getElementById('periodInput').value;
+            const date = document.getElementById('dateInput').value;
             const errorMsg = document.getElementById('errorMsg');
 
             let errors = [];
             if (!place) errors.push('Place');
             if (!hour) errors.push('Hour');
             if (!period) errors.push('AM/PM');
+            if (!date) errors.push('Date');
 
             if (errors.length > 0) {
                 errorMsg.textContent = 'Please select: ' + errors.join(', ');
