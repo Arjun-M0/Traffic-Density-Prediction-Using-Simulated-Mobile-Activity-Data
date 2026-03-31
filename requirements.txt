@@ -1,0 +1,16 @@
+# Core
+numpy
+pandas
+
+# ML
+scikit-learn
+joblib
+
+# Deep learning (pick TensorFlow; Keras comes with TF)
+tensorflow
+
+# Plotting (used in src/model.py)
+matplotlib
+
+# Web app
+Flask
