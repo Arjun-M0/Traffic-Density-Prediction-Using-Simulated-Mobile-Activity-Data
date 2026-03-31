@@ -21,16 +21,6 @@ def load_processed_data(processed_folder):
     
     return X_train, X_test, y_train, y_test
 
-
-def make_sequences(data, lookback=24):
-    sequences = []
-    
-    for i in range(len(data) - lookback):
-        sequences.append(data[i:i+lookback])
-    
-    return np.array(sequences, dtype=np.float32)
-
-
 def build_lstm_model(input_shape):
     model = models.Sequential([
         layers.LSTM(64, input_shape=input_shape, return_sequences=True),
