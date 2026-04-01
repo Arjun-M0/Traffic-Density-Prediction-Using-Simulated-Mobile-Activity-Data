@@ -228,6 +228,7 @@
             document.getElementById(displayId).innerText = value;
             document.getElementById(inputId).value = value;
             document.getElementById(menuId).style.display = "none";
+            saveFormState();
         }
 
         window.onclick = function(event) {
@@ -257,8 +258,78 @@
             }
 
             errorMsg.style.display = 'none';
+            saveFormState();
             return true;
         }
+
+        const FORM_STATE_KEY = 'traffic_prediction_form_state_v1';
+
+        function getCurrentFormState() {
+            return {
+                place: document.getElementById('placeInput')?.value || '',
+                hour: document.getElementById('hourInput')?.value || '',
+                period: document.getElementById('periodInput')?.value || '',
+                date: document.getElementById('dateInput')?.value || ''
+            };
+        }
+
+        function saveFormState() {
+            try {
+                const state = getCurrentFormState();
+                sessionStorage.setItem(FORM_STATE_KEY, JSON.stringify(state));
+            } catch (e) {
+                // If storage is unavailable (rare), fail silently.
+            }
+        }
+
+        function restoreFormState() {
+            let raw = null;
+            try {
+                raw = sessionStorage.getItem(FORM_STATE_KEY);
+            } catch (e) {
+                return;
+            }
+
+            if (!raw) return;
+
+            let state;
+            try {
+                state = JSON.parse(raw);
+            } catch (e) {
+                return;
+            }
+
+            if (!state || typeof state !== 'object') return;
+
+            if (state.place) {
+                document.getElementById('placeInput').value = state.place;
+                document.getElementById('selectedPlace').innerText = state.place;
+            }
+            if (state.hour) {
+                document.getElementById('hourInput').value = state.hour;
+                document.getElementById('selectedHour').innerText = state.hour;
+            }
+            if (state.period) {
+                document.getElementById('periodInput').value = state.period;
+                document.getElementById('selectedPeriod').innerText = state.period;
+            }
+            if (state.date) {
+                document.getElementById('dateInput').value = state.date;
+            }
+        }
+
+        (function wirePersistence() {
+            restoreFormState();
+
+            const dateInput = document.getElementById('dateInput');
+            if (dateInput) {
+                dateInput.addEventListener('change', saveFormState);
+                dateInput.addEventListener('input', saveFormState);
+            }
+
+            // Save state on pagehide as well (covers navigating away without explicit changes).
+            window.addEventListener('pagehide', saveFormState);
+        })();
     </script>
 
 </body>

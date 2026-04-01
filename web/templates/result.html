@@ -63,7 +63,8 @@
 
     <div class="card">
         <h2>Traffic Prediction Result</h2>
-        <p style="margin-bottom: 15px; opacity: 0.9;">Prediction for {{ selected_date }}</p>
+
+        <p style="margin-bottom: 15px; opacity: 0.9;">Prediction for {{ selected_date }} — {{ place }}, {{ hour }} {{ period }}</p>
 
         <div class="traffic-level 
             {% if prediction == 'Low' %}low
