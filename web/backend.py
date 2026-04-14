@@ -118,6 +118,9 @@ def home():
         return render_template("result.html",
                                prediction=prediction,
                                value=value,
+                               place=place,
+                               hour=hour_12,
+                               period=period,
                                selected_date=selected_date.strftime("%Y-%m-%d"))
 
     return render_template("index.html")
